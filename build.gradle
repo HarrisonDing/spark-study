@@ -13,11 +13,12 @@ tasks.withType(JavaCompile) {
 }
 
 
-
 repositories {
-        
-     maven { url "http://repo.maven.apache.org/maven2" }
+	mavenLocal()
+    jcenter()
+    mavenCentral()
 }
+
 dependencies {
     compile group: 'org.apache.spark', name: 'spark-core_2.11', version:'2.3.0'
     compile group: 'org.apache.hadoop', name: 'hadoop-client', version:'3.0.0'
