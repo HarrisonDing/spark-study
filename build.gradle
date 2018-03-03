@@ -1,0 +1,25 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'spark-study'
+version = '0.0.1-SNAPSHOT'
+
+description = """hd-study"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+
+
+repositories {
+        
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.apache.spark', name: 'spark-core_2.11', version:'2.3.0'
+    compile group: 'org.apache.hadoop', name: 'hadoop-client', version:'3.0.0'
+    testCompile group: 'junit', name: 'junit', version:'3.8.1'
+}
