@@ -15,11 +15,12 @@ import spark.core.WordCount;
  *
  */
 enum RUNT{
-	WORDCOUNT, MAP, FILTER, FLATMAP
+	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY,
+	REDUCEBYKEY, SORTBYKEY,
 }
 public class App
 {
-	private static RUNT rt = RUNT.FLATMAP;
+	private static RUNT rt = RUNT.SORTBYKEY;
 	private static TransformationOperation trans = new TransformationOperation();
 
     public static void main( String[] args )
@@ -42,6 +43,18 @@ public class App
     		
     	case FLATMAP:
     		trans.flatMap();
+    		break;
+    		
+    	case GROUPBYKEY:
+    		trans.groupByKey();
+    		break;
+    		
+    	case REDUCEBYKEY:
+    		trans.reduceByKey();
+    		break;
+    		
+    	case SORTBYKEY:
+    		trans.sortByKey();
     		break;
     		
     	default:
