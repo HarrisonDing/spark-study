@@ -34,7 +34,7 @@ public class App
     		wc.runJob();
     		break;
     	case MAP:
-    		trans.map(); 
+    		trans.map();
     		break;
     		
     	case FILTER:
