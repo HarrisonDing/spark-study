@@ -228,4 +228,107 @@ public class TransformationOperation implements Serializable {
 		});
 	}
 	
+	public void join() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("join");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Tuple2<Integer, String>> listName = Arrays.asList(
+			new Tuple2<Integer, String>(1, "东方不败"),
+			new Tuple2<Integer, String>(2, "岳不群"),
+			new Tuple2<Integer, String>(3, "令狐冲"),
+			new Tuple2<Integer, String>(4, "任我行"));
+		
+		List<Tuple2<Integer, Integer>> listScores = Arrays.asList(new Tuple2<Integer, Integer>(1, 60),
+				new Tuple2<Integer, Integer>(2, 70),
+				new Tuple2<Integer, Integer>(3, 80),
+				new Tuple2<Integer, Integer>(4, 90));
+		
+		JavaPairRDD<Integer, String> listNameRDD = sc.parallelizePairs(listName);
+		JavaPairRDD<Integer, Integer> listScoreRDD = sc.parallelizePairs(listScores);
+		
+		JavaPairRDD<Integer, Tuple2<String, Integer>> join = listNameRDD.join(listScoreRDD);
+		join.foreach(new VoidFunction<Tuple2<Integer,Tuple2<String,Integer>>>() {
+
+			@Override
+			public void call(Tuple2<Integer, Tuple2<String, Integer>> t) throws Exception {
+				System.out.println("No: " + t._1 + ", Name: " + t._2()._1
+						+ ", Score: " + t._2()._2());
+			}
+		});
+	}
+
+	public void cogroup() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("cogroup");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Tuple2<Integer, String>> listName = Arrays.asList(
+			new Tuple2<Integer, String>(1, "东方不败"),
+			new Tuple2<Integer, String>(2, "岳不群"),
+			new Tuple2<Integer, String>(3, "令狐冲"),
+			new Tuple2<Integer, String>(4, "任我行"));
+		
+		List<Tuple2<Integer, Integer>> listScores = Arrays.asList(
+				new Tuple2<Integer, Integer>(1, 60),
+				new Tuple2<Integer, Integer>(2, 70),
+				new Tuple2<Integer, Integer>(3, 80),
+				new Tuple2<Integer, Integer>(4, 90),
+				new Tuple2<Integer, Integer>(1, 61),
+				new Tuple2<Integer, Integer>(2, 71),
+				new Tuple2<Integer, Integer>(3, 81),
+				new Tuple2<Integer, Integer>(4, 91));
+		
+		JavaPairRDD<Integer, String> listNameRDD = sc.parallelizePairs(listName);
+		JavaPairRDD<Integer, Integer> listScoreRDD = sc.parallelizePairs(listScores);
+		JavaPairRDD<Integer, Tuple2<Iterable<String>, Iterable<Integer>>> cogroup = listNameRDD.cogroup(listScoreRDD);
+		cogroup.foreach(new VoidFunction<Tuple2<Integer,Tuple2<Iterable<String>,Iterable<Integer>>>>() {
+
+			@Override
+			public void call(Tuple2<Integer, Tuple2<Iterable<String>, Iterable<Integer>>> t) throws Exception {
+				System.out.println("No: " + t._1 + ", Name Array: " + t._2._1 + ", Score Array: " + t._2._2);
+			}
+		});
+	}
+
+	public void union() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("union");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4);
+		List<Integer> listb = Arrays.asList(4, 5, 6, 7, 8);
+		
+		
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
+		JavaRDD<Integer> listbRDD = sc.parallelize(listb);
+		JavaRDD<Integer> union = listaRDD.union(listbRDD);
+		union.foreach(new VoidFunction<Integer>() {
+
+			@Override
+			public void call(Integer t) throws Exception {
+				System.out.println(t);
+			}
+		});
+	}
+
+
 }

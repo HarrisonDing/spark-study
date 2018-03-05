@@ -16,11 +16,11 @@ import spark.core.WordCount;
  */
 enum RUNT{
 	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY,
-	REDUCEBYKEY, SORTBYKEY,
+	REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION,
 }
 public class App
 {
-	private static RUNT rt = RUNT.SORTBYKEY;
+	private static RUNT rt = RUNT.UNION;
 	private static TransformationOperation trans = new TransformationOperation();
 
     public static void main( String[] args )
@@ -55,6 +55,18 @@ public class App
     		
     	case SORTBYKEY:
     		trans.sortByKey();
+    		break;
+    		
+    	case JOIN:
+    		trans.join(); 
+    		break;
+    		
+    	case COGROUP:
+    		trans.cogroup();
+    		break;
+    		
+    	case UNION:
+    		trans.union();
     		break;
     		
     	default:
