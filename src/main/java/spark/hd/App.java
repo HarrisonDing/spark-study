@@ -7,6 +7,8 @@
  */
 package spark.hd;
 
+import org.apache.spark.util.Benchmark.Case;
+
 import spark.core.TransformationOperation;
 import spark.core.WordCount;
 
@@ -17,10 +19,11 @@ import spark.core.WordCount;
 enum RUNT{
 	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY,
 	REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION,
+	INTERSECTION, DISTINCT, CARTESIAN
 }
 public class App
 {
-	private static RUNT rt = RUNT.UNION;
+	private static RUNT rt = RUNT.CARTESIAN;
 	private static TransformationOperation trans = new TransformationOperation();
 
     public static void main( String[] args )
@@ -67,6 +70,18 @@ public class App
     		
     	case UNION:
     		trans.union();
+    		break;
+    		
+    	case INTERSECTION:
+    		trans.intersection();
+    		break;
+    		
+    	case DISTINCT:
+    		trans.distinct();
+    		break;
+    		
+    	case CARTESIAN:
+    		trans.cartesian();
     		break;
     		
     	default:

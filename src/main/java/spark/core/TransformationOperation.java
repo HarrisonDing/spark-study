@@ -330,5 +330,77 @@ public class TransformationOperation implements Serializable {
 		});
 	}
 
+	public void intersection() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("intersection");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 6);
+		List<Integer> listb = Arrays.asList(4, 5, 6, 7, 8);
+		
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
+		JavaRDD<Integer> listbRDD = sc.parallelize(listb);
+		listaRDD.intersection(listbRDD).foreach(new VoidFunction<Integer>() {
+
+			@Override
+			public void call(Integer t) throws Exception {
+				System.out.println(t);
+			}
+		});
+	}
+	
+	public void distinct() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("distinct");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 6, 4, 5, 6, 7, 8);
+		
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
+		listaRDD.distinct().foreach(new VoidFunction<Integer>() {
+
+			@Override
+			public void call(Integer t) throws Exception {
+				System.out.println(t);
+			}
+		});
+	}
+	
+	public void cartesian() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("cartesian");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4);
+		List<String> listb = Arrays.asList("a", "b", "c", "d");
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
+		JavaRDD<String> listbRDD = sc.parallelize(listb);
+		JavaPairRDD<Integer, String> cartesian = listaRDD.cartesian(listbRDD);
+		cartesian.foreach(new VoidFunction<Tuple2<Integer,String>>() {
+
+			@Override
+			public void call(Tuple2<Integer, String> t) throws Exception {
+				System.out.println(t._1 + " " + t._2);
+			}
+		});
+	}
 
 }
