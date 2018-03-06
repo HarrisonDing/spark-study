@@ -8,6 +8,7 @@
 package spark.core;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -403,4 +404,87 @@ public class TransformationOperation implements Serializable {
 		});
 	}
 
+	public void mapPartition() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("mapPartition");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 5, 6);
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista, 2);
+		listaRDD.mapPartitions(new FlatMapFunction<Iterator<Integer>, String>() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.apache.spark.api.java.function.FlatMapFunction#call(java.lang.Object)
+			 * Each time process based on a partition
+			 */
+			@Override
+			public Iterator<String> call(Iterator<Integer> t) throws Exception {
+				ArrayList<String> list = new ArrayList<String>();
+				while(t.hasNext()) {
+					Integer integer = t.next();
+					list.add("Hello " + integer);
+				}
+				return list.iterator();
+			}
+		}).foreach(new VoidFunction<String>() {
+
+			@Override
+			public void call(String t) throws Exception {
+				System.out.println(t);
+			}
+		});;
+	}
+	
+	public void repartition() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("repartition");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 5, 6);
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
+		JavaRDD<Integer> repartition = listaRDD.repartition(2);
+		repartition.foreach(new VoidFunction<Integer>() {
+
+			@Override
+			public void call(Integer t) throws Exception {
+				System.out.println(t);
+			}
+		});
+	}
+
+	public void coalesce() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("cartesian");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 5, 6);
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
+		listaRDD.coalesce(2, true).foreach(new VoidFunction<Integer>() {
+
+			@Override
+			public void call(Integer t) throws Exception {
+				System.out.println(t);
+			}
+		});;
+	}
+	
 }

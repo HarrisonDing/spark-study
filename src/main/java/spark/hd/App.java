@@ -19,11 +19,12 @@ import spark.core.WordCount;
 enum RUNT{
 	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY,
 	REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION,
-	INTERSECTION, DISTINCT, CARTESIAN
+	INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION,
+	REPARTITION, COALESCE
 }
 public class App
 {
-	private static RUNT rt = RUNT.CARTESIAN;
+	private static RUNT rt = RUNT.COALESCE;
 	private static TransformationOperation trans = new TransformationOperation();
 
     public static void main( String[] args )
@@ -61,7 +62,7 @@ public class App
     		break;
     		
     	case JOIN:
-    		trans.join(); 
+    		trans.join();
     		break;
     		
     	case COGROUP:
@@ -82,6 +83,18 @@ public class App
     		
     	case CARTESIAN:
     		trans.cartesian();
+    		break;
+    		
+    	case MAPPARTITION:
+    		trans.mapPartition();
+    		break;
+    		
+    	case REPARTITION:
+    		trans.repartition();
+    		break;
+    		
+    	case COALESCE:
+    		trans.coalesce();
     		break;
     		
     	default:
