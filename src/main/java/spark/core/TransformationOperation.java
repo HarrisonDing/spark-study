@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
+import org.apache.spark.Partitioner;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -119,7 +121,6 @@ public class TransformationOperation implements Serializable {
 		List<String> list = Arrays.asList("you	jump", "I	jump");
 		JavaRDD<String> listRDD = sc.parallelize(list);
 		JavaRDD<String> flatMap = listRDD.flatMap(new FlatMapFunction<String, String>() {
-
 			public Iterator<String> call(String t) throws Exception {
 				return Arrays.asList(t.split("\t")).iterator();
 			}
@@ -483,6 +484,149 @@ public class TransformationOperation implements Serializable {
 			@Override
 			public void call(Integer t) throws Exception {
 				System.out.println(t);
+			}
+		});;
+	}
+	
+	public void sample() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("sample");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 5, 6);
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
+		JavaRDD<Integer> sample = listaRDD.sample(true, 0.1);
+		sample.foreach(new VoidFunction<Integer>() {
+			@Override
+			public void call(Integer t) throws Exception {
+				System.out.println(t);
+			}
+		});
+	}
+
+	public void aggrateByKey() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("aggrateByKey");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<String> list = Arrays.asList("you	jump", "I	jump");
+		JavaRDD<String> listRDD = sc.parallelize(list);
+		JavaRDD<String> flatMap = listRDD.flatMap(new FlatMapFunction<String, String>() {
+			public Iterator<String> call(String t) throws Exception {
+				return Arrays.asList(t.split("\t")).iterator();
+			}
+		});
+		flatMap.mapToPair(new PairFunction<String, String, Integer>() {
+
+			@Override
+			public Tuple2<String, Integer> call(String t) throws Exception {
+				return new Tuple2<String, Integer>(t, 1);
+			}
+		}).aggregateByKey(0, new Function2<Integer,Integer, Integer>() {
+
+			@Override
+			public Integer call(Integer v1, Integer v2) throws Exception {
+				return v1 + v2;
+			}
+		}, new Function2<Integer, Integer, Integer>() {
+
+			@Override
+			public Integer call(Integer v1, Integer v2) throws Exception {
+				return v1 + v2;
+			}
+		}).foreach(new VoidFunction<Tuple2<String,Integer>>() {
+
+			@Override
+			public void call(Tuple2<String, Integer> t) throws Exception {
+				System.out.println("key: " + t._1 + ", value: " + t._2);
+			}
+		});
+		
+	}
+	
+	public void mapPartitionWithIndex() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("mapPartitionWithIndex");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista, 2);
+		listaRDD.mapPartitionsWithIndex(new Function2<Integer, Iterator<Integer>, Iterator<String>>() {
+
+			@Override
+			public Iterator<String> call(Integer index, Iterator<Integer> iterator) throws Exception {
+				ArrayList<String> list = new ArrayList<String>();
+				while (iterator.hasNext()) {
+					String result = iterator.next() + "_" + index;
+					list.add(result);
+					
+				}
+				return list.iterator();
+			}
+		}, true).foreach(new VoidFunction<String>() {
+			
+			@Override
+			public void call(String t) throws Exception {
+				System.out.println(t);
+			}
+		});;
+	}
+
+	public void repartitionAndSortWithinPartitions() {
+		// Create a SparkConf object
+		SparkConf conf = new SparkConf();
+		// setMaster to check run it in local or cluster
+		// Default in cluster
+		conf.setMaster("local");
+		// Set job name
+		conf.setAppName("repartitionAndSortWithinPartitions");
+		// create app run entry
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		// simulate a set to create RDD in parallel way
+		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
+		Random random = new Random();
+		listaRDD.mapToPair(new PairFunction<Integer, Integer, Integer>() {
+
+			@Override
+			public Tuple2<Integer, Integer> call(Integer t) throws Exception {
+				
+				return new Tuple2<Integer, Integer>(t, random.nextInt(10));
+			}
+		}).repartitionAndSortWithinPartitions(new Partitioner() {
+			
+			@Override
+			public int numPartitions() {
+				return 2;
+			}
+			
+			@Override
+			public int getPartition(Object key) {
+				return key.toString().hashCode() % 2;
+			}
+		}).foreach(new VoidFunction<Tuple2<Integer,Integer>>() {
+
+			@Override
+			public void call(Tuple2<Integer, Integer> t) throws Exception {
+				System.out.println(t._1 + " , value: " + t._2);
 			}
 		});;
 	}

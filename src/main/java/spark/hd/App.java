@@ -20,11 +20,12 @@ enum RUNT{
 	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY,
 	REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION,
 	INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION,
-	REPARTITION, COALESCE
+	REPARTITION, COALESCE, SAMPLE, AGGREGATEBYKEY, 
+	MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS
 }
 public class App
 {
-	private static RUNT rt = RUNT.COALESCE;
+	private static RUNT rt = RUNT.REPARTITIONANDSORTWITHINPARTITIONS;
 	private static TransformationOperation trans = new TransformationOperation();
 
     public static void main( String[] args )
@@ -95,6 +96,22 @@ public class App
     		
     	case COALESCE:
     		trans.coalesce();
+    		break;
+    		
+    	case SAMPLE:
+    		trans.sample();
+    		break;
+    		
+    	case AGGREGATEBYKEY:
+    		trans.aggrateByKey();
+    		break;
+    		
+    	case MAPPARTITIONWITHINDEX:
+    		trans.mapPartitionWithIndex();
+    		break;
+    		
+    	case REPARTITIONANDSORTWITHINPARTITIONS:
+    		trans.repartitionAndSortWithinPartitions();
     		break;
     		
     	default:
