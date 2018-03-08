@@ -7,8 +7,7 @@
  */
 package spark.hd;
 
-import org.apache.spark.util.Benchmark.Case;
-
+import spark.core.ActionOperations;
 import spark.core.TransformationOperation;
 import spark.core.WordCount;
 
@@ -21,12 +20,16 @@ enum RUNT{
 	REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION,
 	INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION,
 	REPARTITION, COALESCE, SAMPLE, AGGREGATEBYKEY, 
-	MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS
+	MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS, 
+	ACTION_REDUCE, ACTION_COLLECT, ACTION_TAKE, ACTION_COUNT, 
+	ACTION_TAKEORDERED, ACTION_SAVEASTEXTFILE, ACTION_COUNT_BY_KEY,
+	ACTION_TAKE_SAMPLE
 }
 public class App
 {
-	private static RUNT rt = RUNT.REPARTITIONANDSORTWITHINPARTITIONS;
+	private static RUNT rt = RUNT.ACTION_TAKE_SAMPLE;
 	private static TransformationOperation trans = new TransformationOperation();
+	private static ActionOperations acto = new ActionOperations();
 
     public static void main( String[] args )
     {
@@ -112,6 +115,38 @@ public class App
     		
     	case REPARTITIONANDSORTWITHINPARTITIONS:
     		trans.repartitionAndSortWithinPartitions();
+    		break;
+    		
+    	case ACTION_REDUCE:
+    		acto.reduce();
+    		break;
+    		
+    	case ACTION_COLLECT:
+    		acto.collect();
+    		break;
+    		
+    	case ACTION_TAKE:
+    		acto.take();
+    		break;
+    		
+    	case ACTION_COUNT:
+    		acto.count();
+    		break;
+    		
+    	case ACTION_TAKEORDERED:
+    		acto.takeOrdered();
+    		break;
+    		
+    	case ACTION_SAVEASTEXTFILE:
+    		acto.saveAsTextFile();
+    		break;
+    		
+    	case ACTION_COUNT_BY_KEY:
+    		acto.countByKey();
+    		break;
+    		
+    	case ACTION_TAKE_SAMPLE:
+    		acto.takeSample();
     		break;
     		
     	default:
