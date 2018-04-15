@@ -33,10 +33,9 @@ import scala.Tuple2;
  */
 
 /**
- * Issue and fix:
- * 1. Exception in thread "main" org.apache.spark.SparkException: Task not serializable
- *    If create a class to encapsulate atomic operation
- *  Fixed by : Add to implement from Serializable when create the class
+ * Issue and fix: 1. Exception in thread "main" org.apache.spark.SparkException:
+ * Task not serializable If create a class to encapsulate atomic operation Fixed
+ * by : Add to implement from Serializable when create the class
  * 
  * @author Harrison.Ding
  *
@@ -59,16 +58,13 @@ public class TransformationOperation implements Serializable {
 		JavaRDD<String> listRDD = sc.parallelize(list);
 		// R(para 2) - return value
 		JavaRDD<String> map = listRDD.map(new Function<String, String>() {
-			/**
-			 * 
-			 */
 
 			public String call(String str) throws Exception {
 				return "Hello " + str;
 			}
 		});
 		map.foreach(new VoidFunction<String>() {
-			
+
 			public void call(String t) throws Exception {
 				System.out.println(t);
 			}
@@ -89,14 +85,14 @@ public class TransformationOperation implements Serializable {
 		// create app run entry
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		// simulate a set to create RDD in parallel way
-		List<Integer> list = Arrays.asList(1,2,3,4,5,6,7,8,9);
+		List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9);
 		JavaRDD<Integer> listRDD = sc.parallelize(list);
 		JavaRDD<Integer> filter = listRDD.filter(new Function<Integer, Boolean>() {
 			public Boolean call(Integer i) throws Exception {
 				return i % 2 == 0;
 			}
 		});
-		
+
 		filter.foreach(new VoidFunction<Integer>() {
 			public void call(Integer t) throws Exception {
 				System.out.println(t);
@@ -124,7 +120,7 @@ public class TransformationOperation implements Serializable {
 			public Iterator<String> call(String t) throws Exception {
 				return Arrays.asList(t.split("\t")).iterator();
 			}
-			
+
 		});
 		flatMap.foreach(new VoidFunction<String>() {
 
@@ -132,7 +128,7 @@ public class TransformationOperation implements Serializable {
 				System.out.println(t);
 			}
 		});
-		
+
 	}
 
 	/**
@@ -149,19 +145,17 @@ public class TransformationOperation implements Serializable {
 		// create app run entry
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		// simulate a set to create RDD in parallel way
-		List<Tuple2<String, String>> list = Arrays.asList(
-			new Tuple2<String, String>("峨嵋", "周芷若"),
-			new Tuple2<String, String>("武当", "宋青书"),
-			new Tuple2<String, String>("峨嵋", "灭绝师太"),
-			new Tuple2<String, String>("武当", "张无忌"));
+		List<Tuple2<String, String>> list = Arrays.asList(new Tuple2<String, String>("峨嵋", "周芷若"),
+				new Tuple2<String, String>("武当", "宋青书"), new Tuple2<String, String>("峨嵋", "灭绝师太"),
+				new Tuple2<String, String>("武当", "张无忌"));
 		JavaPairRDD<String, String> listRDD = sc.parallelizePairs(list);
 		JavaPairRDD<String, Iterable<String>> groupByKey = listRDD.groupByKey();
-		groupByKey.foreach(new VoidFunction<Tuple2<String,Iterable<String>>>() {
+		groupByKey.foreach(new VoidFunction<Tuple2<String, Iterable<String>>>() {
 
 			public void call(Tuple2<String, Iterable<String>> t) throws Exception {
 				System.out.println(t._1);
 				Iterator<String> iterator = t._2.iterator();
-				while(iterator.hasNext()) {
+				while (iterator.hasNext()) {
 					System.out.println(iterator.next());
 				}
 				System.out.println("=====group by key======");
@@ -180,29 +174,28 @@ public class TransformationOperation implements Serializable {
 		// create app run entry
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		// simulate a set to create RDD in parallel way
-		List<Tuple2<String, Integer>> list = Arrays.asList(
-			new Tuple2<String, Integer>("峨嵋", 40),
-			new Tuple2<String, Integer>("武当", 60),
-			new Tuple2<String, Integer>("峨嵋", 83),
-			new Tuple2<String, Integer>("武当", 89));
+		List<Tuple2<String, Integer>> list = Arrays.asList(new Tuple2<String, Integer>("峨嵋", 40),
+				new Tuple2<String, Integer>("武当", 60), new Tuple2<String, Integer>("峨嵋", 83),
+				new Tuple2<String, Integer>("武当", 89));
 		JavaRDD<Tuple2<String, Integer>> listRDD = sc.parallelize(list);
-		JavaPairRDD<String, Integer> mapToPair = listRDD.mapToPair(new PairFunction<Tuple2<String,Integer>, String, Integer>() {
-			public Tuple2<String, Integer> call(Tuple2<String, Integer> t) throws Exception {
-				return new Tuple2<String, Integer>(t._1, t._2);
-			}
-		});
+		JavaPairRDD<String, Integer> mapToPair = listRDD
+				.mapToPair(new PairFunction<Tuple2<String, Integer>, String, Integer>() {
+					public Tuple2<String, Integer> call(Tuple2<String, Integer> t) throws Exception {
+						return new Tuple2<String, Integer>(t._1, t._2);
+					}
+				});
 		mapToPair.reduceByKey(new Function2<Integer, Integer, Integer>() {
-			
+
 			public Integer call(Integer v1, Integer v2) throws Exception {
 				return v1 + v2;
 			}
-		}).foreach(new VoidFunction<Tuple2<String,Integer>>() {
+		}).foreach(new VoidFunction<Tuple2<String, Integer>>() {
 
 			public void call(Tuple2<String, Integer> t) throws Exception {
-				System.out.println(t._1+ "分数: " + t._2);
+				System.out.println(t._1 + "分数: " + t._2);
 			}
 		});
-		
+
 	}
 
 	public void sortByKey() {
@@ -216,20 +209,18 @@ public class TransformationOperation implements Serializable {
 		// create app run entry
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		// simulate a set to create RDD in parallel way
-		List<Tuple2<Integer, String>> list = Arrays.asList(
-			new Tuple2<Integer, String>(67, "东方不败"),
-			new Tuple2<Integer, String>(60, "岳不群"),
-			new Tuple2<Integer, String>(44, "令狐冲"),
-			new Tuple2<Integer, String>(36, "任我行"));
+		List<Tuple2<Integer, String>> list = Arrays.asList(new Tuple2<Integer, String>(67, "东方不败"),
+				new Tuple2<Integer, String>(60, "岳不群"), new Tuple2<Integer, String>(44, "令狐冲"),
+				new Tuple2<Integer, String>(36, "任我行"));
 		JavaPairRDD<Integer, String> listRDD = sc.parallelizePairs(list);
-		listRDD.sortByKey().foreach(new VoidFunction<Tuple2<Integer,String>>() {
+		listRDD.sortByKey().foreach(new VoidFunction<Tuple2<Integer, String>>() {
 			@Override
 			public void call(Tuple2<Integer, String> t) throws Exception {
 				System.out.println(t._2 + " : " + t._1);
 			}
 		});
 	}
-	
+
 	public void join() {
 		// Create a SparkConf object
 		SparkConf conf = new SparkConf();
@@ -241,27 +232,23 @@ public class TransformationOperation implements Serializable {
 		// create app run entry
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		// simulate a set to create RDD in parallel way
-		List<Tuple2<Integer, String>> listName = Arrays.asList(
-			new Tuple2<Integer, String>(1, "东方不败"),
-			new Tuple2<Integer, String>(2, "岳不群"),
-			new Tuple2<Integer, String>(3, "令狐冲"),
-			new Tuple2<Integer, String>(4, "任我行"));
-		
+		List<Tuple2<Integer, String>> listName = Arrays.asList(new Tuple2<Integer, String>(1, "东方不败"),
+				new Tuple2<Integer, String>(2, "岳不群"), new Tuple2<Integer, String>(3, "令狐冲"),
+				new Tuple2<Integer, String>(4, "任我行"));
+
 		List<Tuple2<Integer, Integer>> listScores = Arrays.asList(new Tuple2<Integer, Integer>(1, 60),
-				new Tuple2<Integer, Integer>(2, 70),
-				new Tuple2<Integer, Integer>(3, 80),
+				new Tuple2<Integer, Integer>(2, 70), new Tuple2<Integer, Integer>(3, 80),
 				new Tuple2<Integer, Integer>(4, 90));
-		
+
 		JavaPairRDD<Integer, String> listNameRDD = sc.parallelizePairs(listName);
 		JavaPairRDD<Integer, Integer> listScoreRDD = sc.parallelizePairs(listScores);
-		
+
 		JavaPairRDD<Integer, Tuple2<String, Integer>> join = listNameRDD.join(listScoreRDD);
-		join.foreach(new VoidFunction<Tuple2<Integer,Tuple2<String,Integer>>>() {
+		join.foreach(new VoidFunction<Tuple2<Integer, Tuple2<String, Integer>>>() {
 
 			@Override
 			public void call(Tuple2<Integer, Tuple2<String, Integer>> t) throws Exception {
-				System.out.println("No: " + t._1 + ", Name: " + t._2()._1
-						+ ", Score: " + t._2()._2());
+				System.out.println("No: " + t._1 + ", Name: " + t._2()._1 + ", Score: " + t._2()._2());
 			}
 		});
 	}
@@ -277,26 +264,20 @@ public class TransformationOperation implements Serializable {
 		// create app run entry
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		// simulate a set to create RDD in parallel way
-		List<Tuple2<Integer, String>> listName = Arrays.asList(
-			new Tuple2<Integer, String>(1, "东方不败"),
-			new Tuple2<Integer, String>(2, "岳不群"),
-			new Tuple2<Integer, String>(3, "令狐冲"),
-			new Tuple2<Integer, String>(4, "任我行"));
-		
-		List<Tuple2<Integer, Integer>> listScores = Arrays.asList(
-				new Tuple2<Integer, Integer>(1, 60),
-				new Tuple2<Integer, Integer>(2, 70),
-				new Tuple2<Integer, Integer>(3, 80),
-				new Tuple2<Integer, Integer>(4, 90),
-				new Tuple2<Integer, Integer>(1, 61),
-				new Tuple2<Integer, Integer>(2, 71),
-				new Tuple2<Integer, Integer>(3, 81),
+		List<Tuple2<Integer, String>> listName = Arrays.asList(new Tuple2<Integer, String>(1, "东方不败"),
+				new Tuple2<Integer, String>(2, "岳不群"), new Tuple2<Integer, String>(3, "令狐冲"),
+				new Tuple2<Integer, String>(4, "任我行"));
+
+		List<Tuple2<Integer, Integer>> listScores = Arrays.asList(new Tuple2<Integer, Integer>(1, 60),
+				new Tuple2<Integer, Integer>(2, 70), new Tuple2<Integer, Integer>(3, 80),
+				new Tuple2<Integer, Integer>(4, 90), new Tuple2<Integer, Integer>(1, 61),
+				new Tuple2<Integer, Integer>(2, 71), new Tuple2<Integer, Integer>(3, 81),
 				new Tuple2<Integer, Integer>(4, 91));
-		
+
 		JavaPairRDD<Integer, String> listNameRDD = sc.parallelizePairs(listName);
 		JavaPairRDD<Integer, Integer> listScoreRDD = sc.parallelizePairs(listScores);
 		JavaPairRDD<Integer, Tuple2<Iterable<String>, Iterable<Integer>>> cogroup = listNameRDD.cogroup(listScoreRDD);
-		cogroup.foreach(new VoidFunction<Tuple2<Integer,Tuple2<Iterable<String>,Iterable<Integer>>>>() {
+		cogroup.foreach(new VoidFunction<Tuple2<Integer, Tuple2<Iterable<String>, Iterable<Integer>>>>() {
 
 			@Override
 			public void call(Tuple2<Integer, Tuple2<Iterable<String>, Iterable<Integer>>> t) throws Exception {
@@ -318,8 +299,7 @@ public class TransformationOperation implements Serializable {
 		// simulate a set to create RDD in parallel way
 		List<Integer> lista = Arrays.asList(1, 2, 3, 4);
 		List<Integer> listb = Arrays.asList(4, 5, 6, 7, 8);
-		
-		
+
 		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
 		JavaRDD<Integer> listbRDD = sc.parallelize(listb);
 		JavaRDD<Integer> union = listaRDD.union(listbRDD);
@@ -345,7 +325,7 @@ public class TransformationOperation implements Serializable {
 		// simulate a set to create RDD in parallel way
 		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 6);
 		List<Integer> listb = Arrays.asList(4, 5, 6, 7, 8);
-		
+
 		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
 		JavaRDD<Integer> listbRDD = sc.parallelize(listb);
 		listaRDD.intersection(listbRDD).foreach(new VoidFunction<Integer>() {
@@ -356,7 +336,7 @@ public class TransformationOperation implements Serializable {
 			}
 		});
 	}
-	
+
 	public void distinct() {
 		// Create a SparkConf object
 		SparkConf conf = new SparkConf();
@@ -369,7 +349,7 @@ public class TransformationOperation implements Serializable {
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		// simulate a set to create RDD in parallel way
 		List<Integer> lista = Arrays.asList(1, 2, 3, 4, 6, 4, 5, 6, 7, 8);
-		
+
 		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
 		listaRDD.distinct().foreach(new VoidFunction<Integer>() {
 
@@ -379,7 +359,7 @@ public class TransformationOperation implements Serializable {
 			}
 		});
 	}
-	
+
 	public void cartesian() {
 		// Create a SparkConf object
 		SparkConf conf = new SparkConf();
@@ -396,7 +376,7 @@ public class TransformationOperation implements Serializable {
 		JavaRDD<Integer> listaRDD = sc.parallelize(lista);
 		JavaRDD<String> listbRDD = sc.parallelize(listb);
 		JavaPairRDD<Integer, String> cartesian = listaRDD.cartesian(listbRDD);
-		cartesian.foreach(new VoidFunction<Tuple2<Integer,String>>() {
+		cartesian.foreach(new VoidFunction<Tuple2<Integer, String>>() {
 
 			@Override
 			public void call(Tuple2<Integer, String> t) throws Exception {
@@ -422,13 +402,15 @@ public class TransformationOperation implements Serializable {
 
 			/*
 			 * (non-Javadoc)
-			 * @see org.apache.spark.api.java.function.FlatMapFunction#call(java.lang.Object)
+			 * 
+			 * @see
+			 * org.apache.spark.api.java.function.FlatMapFunction#call(java.lang.Object)
 			 * Each time process based on a partition
 			 */
 			@Override
 			public Iterator<String> call(Iterator<Integer> t) throws Exception {
 				ArrayList<String> list = new ArrayList<String>();
-				while(t.hasNext()) {
+				while (t.hasNext()) {
 					Integer integer = t.next();
 					list.add("Hello " + integer);
 				}
@@ -440,9 +422,10 @@ public class TransformationOperation implements Serializable {
 			public void call(String t) throws Exception {
 				System.out.println(t);
 			}
-		});;
+		});
+		;
 	}
-	
+
 	public void repartition() {
 		// Create a SparkConf object
 		SparkConf conf = new SparkConf();
@@ -485,9 +468,10 @@ public class TransformationOperation implements Serializable {
 			public void call(Integer t) throws Exception {
 				System.out.println(t);
 			}
-		});;
+		});
+		;
 	}
-	
+
 	public void sample() {
 		// Create a SparkConf object
 		SparkConf conf = new SparkConf();
@@ -534,7 +518,7 @@ public class TransformationOperation implements Serializable {
 			public Tuple2<String, Integer> call(String t) throws Exception {
 				return new Tuple2<String, Integer>(t, 1);
 			}
-		}).aggregateByKey(0, new Function2<Integer,Integer, Integer>() {
+		}).aggregateByKey(0, new Function2<Integer, Integer, Integer>() {
 
 			@Override
 			public Integer call(Integer v1, Integer v2) throws Exception {
@@ -546,16 +530,16 @@ public class TransformationOperation implements Serializable {
 			public Integer call(Integer v1, Integer v2) throws Exception {
 				return v1 + v2;
 			}
-		}).foreach(new VoidFunction<Tuple2<String,Integer>>() {
+		}).foreach(new VoidFunction<Tuple2<String, Integer>>() {
 
 			@Override
 			public void call(Tuple2<String, Integer> t) throws Exception {
 				System.out.println("key: " + t._1 + ", value: " + t._2);
 			}
 		});
-		
+
 	}
-	
+
 	public void mapPartitionWithIndex() {
 		// Create a SparkConf object
 		SparkConf conf = new SparkConf();
@@ -577,17 +561,18 @@ public class TransformationOperation implements Serializable {
 				while (iterator.hasNext()) {
 					String result = iterator.next() + "_" + index;
 					list.add(result);
-					
+
 				}
 				return list.iterator();
 			}
 		}, true).foreach(new VoidFunction<String>() {
-			
+
 			@Override
 			public void call(String t) throws Exception {
 				System.out.println(t);
 			}
-		});;
+		});
+		;
 	}
 
 	public void repartitionAndSortWithinPartitions() {
@@ -608,27 +593,28 @@ public class TransformationOperation implements Serializable {
 
 			@Override
 			public Tuple2<Integer, Integer> call(Integer t) throws Exception {
-				
+
 				return new Tuple2<Integer, Integer>(t, random.nextInt(10));
 			}
 		}).repartitionAndSortWithinPartitions(new Partitioner() {
-			
+
 			@Override
 			public int numPartitions() {
 				return 2;
 			}
-			
+
 			@Override
 			public int getPartition(Object key) {
 				return key.toString().hashCode() % 2;
 			}
-		}).foreach(new VoidFunction<Tuple2<Integer,Integer>>() {
+		}).foreach(new VoidFunction<Tuple2<Integer, Integer>>() {
 
 			@Override
 			public void call(Tuple2<Integer, Integer> t) throws Exception {
 				System.out.println(t._1 + " , value: " + t._2);
 			}
-		});;
+		});
+		;
 	}
-	
+
 }
