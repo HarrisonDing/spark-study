@@ -21,7 +21,7 @@ import scala.Tuple2;
  *
  */
 
-public class DataSkewOptimization implements Serializable {
+public class DataSkew4Optimization implements Serializable {
 	private static final long	serialVersionUID	= -8719986013909204559L;
 	private String				filename;
 	private SparkConf			conf;

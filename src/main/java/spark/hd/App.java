@@ -11,18 +11,19 @@ import spark.core.ActionOperations;
 import spark.core.LogAnalysisCase;
 import spark.core.TransformationOperation;
 import spark.core.WordCount;
-import spark.opt.DataSkewOptimization;
+import spark.opt.DataSkew4Optimization;
+import spark.opt.DataSkew5Optimization;
 
 /**
  * Hello world!
  *
  */
 enum RUNT {
-	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY, REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION, INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION, REPARTITION, COALESCE, SAMPLE, AGGREGATEBYKEY, MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS, ACTION_REDUCE, ACTION_COLLECT, ACTION_TAKE, ACTION_COUNT, ACTION_TAKEORDERED, ACTION_SAVEASTEXTFILE, ACTION_COUNT_BY_KEY, ACTION_TAKE_SAMPLE, INTEGRATED_LOG_CASE, DATA_SKEW_SOLUTION4
+	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY, REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION, INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION, REPARTITION, COALESCE, SAMPLE, AGGREGATEBYKEY, MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS, ACTION_REDUCE, ACTION_COLLECT, ACTION_TAKE, ACTION_COUNT, ACTION_TAKEORDERED, ACTION_SAVEASTEXTFILE, ACTION_COUNT_BY_KEY, ACTION_TAKE_SAMPLE, INTEGRATED_LOG_CASE, DATA_SKEW_SOLUTION4, DATA_SKEW_SOLUTION5
 }
 
 public class App {
-	private static RUNT						rt		= RUNT.DATA_SKEW_SOLUTION4;
+	private static RUNT						rt		= RUNT.DATA_SKEW_SOLUTION5;
 	private static TransformationOperation	trans	= new TransformationOperation();
 	private static ActionOperations			acto	= new ActionOperations();
 	private static String					path	= "";
@@ -153,9 +154,17 @@ public class App {
 
 		case DATA_SKEW_SOLUTION4:
 			path = "D:\\MyWorkSpace\\ResearchingProjects\\spark-study-maven\\data\\data_skew4.txt";
-			DataSkewOptimization dataSkewOpt = new DataSkewOptimization();
+			DataSkew4Optimization dataSkewOpt = new DataSkew4Optimization();
 			dataSkewOpt.initSpark(path);
 			dataSkewOpt.runJob();
+			break;
+
+		case DATA_SKEW_SOLUTION5:
+			path = "D:\\MyWorkSpace\\ResearchingProjects\\spark-study-maven\\data\\data_skew5_a.txt";
+			String pathb = "D:\\MyWorkSpace\\ResearchingProjects\\spark-study-maven\\data\\data_skew5_b.txt";
+			DataSkew5Optimization dataSkewOpt5 = new DataSkew5Optimization();
+			dataSkewOpt5.initSpark(path, pathb);
+			dataSkewOpt5.runJob();
 			break;
 
 		default:
