@@ -1,7 +1,6 @@
 package spark.opt;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,80 +40,92 @@ public class DataSkew5Optimization implements Serializable {
 		JavaRDD<String> linea = sc.textFile(filea, 1);
 		JavaRDD<String> lineb = sc.textFile(fileb, 1);
 
-		List<String> collecta = linea.collect();
-		List<String> collectb = lineb.collect();
-		List<Tuple2<String, String>> lista = new ArrayList<Tuple2<String, String>>();
-		List<Tuple2<String, String>> listb = new ArrayList<Tuple2<String, String>>();
+		List<String> collect1 = linea.collect();
 
-		for (String stra : collecta) {
-			String[] sa = stra.split(" ");
-			lista.add(new Tuple2<String, String>(sa[0], sa[1]));
-		}
+		// flatMap each line to words in the line
+		JavaRDD<Tuple2<String, String>> flatMapaRDD = linea
+				.flatMap(new FlatMapFunction<String, Tuple2<String, String>>() {
 
-		for (String strb : collectb) {
-			String[] sb = strb.split(" ");
-			listb.add(new Tuple2<String, String>(sb[0], sb[1]));
-		}
-
-		JavaRDD<Tuple2<String, String>> list1RDD = sc.parallelize(lista);
-		JavaRDD<Tuple2<String, String>> list2RDD = sc.parallelize(listb);
-		List<Tuple2<String, String>> rdd1data = list1RDD.collect();
-		final Broadcast<List<Tuple2<String, String>>> rdd1braodcast = sc.broadcast(rdd1data);
-		JavaPairRDD<String, Tuple2<String, String>> resultRDD = list2RDD
-				.mapToPair(new PairFunction<Tuple2<String, String>, String, Tuple2<String, String>>() {
-
-					public Tuple2<String, Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-						List<Tuple2<String, String>> rdd1data = rdd1braodcast.value();
-						Map<String, String> rdd1dataMap = new HashMap<String, String>();
-						for (Tuple2<String, String> data : rdd1data) {
-							rdd1dataMap.put(data._1, data._2);
-						}
-						// rdd2 key value
-						String key = t._1;
-						String value = t._2;
-						String rdd1value = rdd1dataMap.get(key);
-						return new Tuple2<String, Tuple2<String, String>>(key,
-								new Tuple2<String, String>(value, rdd1value));
+					@Override
+					public Iterator<Tuple2<String, String>> call(String t) throws Exception {
+						String[] split = t.split(" ");
+						Tuple2<String, String> tuple = new Tuple2(split[0], split[1]);
+						return Arrays.asList(tuple).iterator();
 					}
 				});
 
-		resultRDD.foreach(new VoidFunction<Tuple2<String, Tuple2<String, String>>>() {
+		JavaRDD<Tuple2<String, String>> flatMapbRDD = lineb
+				.flatMap(new FlatMapFunction<String, Tuple2<String, String>>() {
 
-			public void call(Tuple2<String, Tuple2<String, String>> t) throws Exception {
-				System.out.println(t._1 + "  " + t._2._1 + "  " + t._2._2);
+					@Override
+					public Iterator<Tuple2<String, String>> call(String t) throws Exception {
+						String[] split = t.split(" ");
+						Tuple2<String, String> tuple = new Tuple2(split[0], split[1]);
+						return Arrays.asList(tuple).iterator();
+					}
+				});
 
-			}
-		});
+		List<Tuple2<String, String>> rddaData = flatMapaRDD.collect();
 
+		final Broadcast<List<Tuple2<String, String>>> rddaBroadCast = sc.broadcast(rddaData);
 		/*
-		 * JavaPairRDD<String, Tuple2<String, String>> resultPairRDD = flatMapbRDD
+		 * JavaPairRDD<String, Tuple2<String, String>> resultRDD = flatMapbRDD
 		 * .mapToPair(new PairFunction<Tuple2<String, String>, String, Tuple2<String,
 		 * String>>() {
 		 * 
-		 * @Override public Tuple2<String, Tuple2<String, String>> call(Tuple2<String,
-		 * String> t) throws Exception { List<Tuple2<String, String>> rddaData =
-		 * rddaBroadCast.value(); HashMap<String, String> rddaDataMap = new
-		 * HashMap<String, String>(); for (Iterator iterator = rddaData.iterator();
-		 * iterator.hasNext();) { Tuple2<String, String> tuple2 = (Tuple2<String,
-		 * String>) iterator.next(); rddaDataMap.put(tuple2._1, tuple2._2); } // From
-		 * RDD B String key = "DD"; // String key = t._1; // String value = t._2; String
-		 * value = "EE"; String rddavalue = "DFDF"; // String rddavalue =
-		 * rddaDataMap.get(key); System.out.println("key:  " + key + ", value: " + value
-		 * + ", rddavalue： " + rddavalue); return new Tuple2<String, Tuple2<String,
-		 * String>>(key, new Tuple2<String, String>(value, rddavalue)); } });
+		 * public Tuple2<String, Tuple2<String, String>> call(Tuple2<String, String> t)
+		 * throws Exception { List<Tuple2<String, String>> rdd1data =
+		 * rddaBroadCast.value(); Map<String, String> rdd1dataMap = new HashMap<String,
+		 * String>(); for (Tuple2<String, String> data : rdd1data) {
+		 * rdd1dataMap.put(data._1, data._2); } // rdd2 key value String key = t._1;
+		 * String value = t._2; String rdd1value = rdd1dataMap.get(key); return new
+		 * Tuple2<String, Tuple2<String, String>>(key, new Tuple2<String, String>(value,
+		 * rdd1value)); } });
 		 * 
-		 * System.out.println("\n=========  print reduce final results  =============");
-		 * resultPairRDD.foreach(new VoidFunction<Tuple2<String, Tuple2<String,
-		 * String>>>() {
+		 * resultRDD.foreach(new VoidFunction<Tuple2<String, Tuple2<String, String>>>()
+		 * {
 		 * 
-		 * @Override public void call(Tuple2<String, Tuple2<String, String>> t) throws
-		 * Exception { System.out.println("学号:  " + t._1 + ", 班级: " + t._2._1 + ", 姓名： "
-		 * + t._2._2); } });
+		 * public void call(Tuple2<String, Tuple2<String, String>> t) throws Exception {
+		 * System.out.println(t._1 + "  " + t._2._1 + "  " + t._2._2);
+		 * 
+		 * } });
 		 */
-		/*
-		 * resultPairRDD.foreach(data -> { System.out.println("学号:  " + data._1 +
-		 * ", 班级: " + data._2._1 + ", 姓名： " + data._2._2); });
-		 */
+
+		JavaPairRDD<String, Tuple2<String, String>> resultPairRDD = flatMapbRDD
+				.mapToPair(new PairFunction<Tuple2<String, String>, String, Tuple2<String, String>>() {
+
+					@Override
+					public Tuple2<String, Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
+						List<Tuple2<String, String>> rddaData = rddaBroadCast.value();
+						HashMap<String, String> rddaDataMap = new HashMap<String, String>();
+						for (Iterator iterator = rddaData.iterator(); iterator.hasNext();) {
+							Tuple2<String, String> tuple2 = (Tuple2<String, String>) iterator.next();
+							rddaDataMap.put(tuple2._1, tuple2._2);
+						}
+						// From RDD B
+						String key = t._1;
+						String value = t._2;
+						String rddavalue = rddaDataMap.get(key);
+						System.out.println("key:  " + key + ", value: " + value + ", rddavalue： " + rddavalue);
+						return new Tuple2<String, Tuple2<String, String>>(key,
+								new Tuple2<String, String>(value, rddavalue));
+					}
+				});
+
+		System.out.println("\n=========  print reduce final results  =============");
+		resultPairRDD.foreach(new VoidFunction<Tuple2<String, Tuple2<String, String>>>() {
+
+			@Override
+			public void call(Tuple2<String, Tuple2<String, String>> t) throws Exception {
+				System.out.println("学号： " + t._1 + "， 班级： " + t._2._1 + "， 姓名： " + t._2._2);
+			}
+			// Not output， for register a call back only.
+		});
+
+		resultPairRDD.foreach(data -> {
+			System.out.println("学号1:  " + data._1 + ", 班级1: " + data._2._1 + ", 姓名1： " + data._2._2);
+		});
+
 	}
 
 	public void initSpark(String afile, String bfile) {
