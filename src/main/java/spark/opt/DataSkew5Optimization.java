@@ -1,6 +1,7 @@
 package spark.opt;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,39 +41,30 @@ public class DataSkew5Optimization implements Serializable {
 		JavaRDD<String> linea = sc.textFile(filea, 1);
 		JavaRDD<String> lineb = sc.textFile(fileb, 1);
 
-		List<String> collect1 = linea.collect();
+		List<String> collecta = linea.collect();
+		List<String> collectb = lineb.collect();
+		List<Tuple2<String, String>> lista = new ArrayList<Tuple2<String, String>>();
+		List<Tuple2<String, String>> listb = new ArrayList<Tuple2<String, String>>();
 
-		// flatMap each line to words in the line
-		JavaRDD<Tuple2<String, String>> flatMapaRDD = linea
-				.flatMap(new FlatMapFunction<String, Tuple2<String, String>>() {
+		for (String stra : collecta) {
+			String[] sa = stra.split(" ");
+			lista.add(new Tuple2<String, String>(sa[0], sa[1]));
+		}
 
-					@Override
-					public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-						String[] split = t.split(" ");
-						Tuple2<String, String> tuple = new Tuple2(split[0], split[1]);
-						return Arrays.asList(tuple).iterator();
-					}
-				});
+		for (String strb : collectb) {
+			String[] sb = strb.split(" ");
+			listb.add(new Tuple2<String, String>(sb[0], sb[1]));
+		}
 
-		JavaRDD<Tuple2<String, String>> flatMapbRDD = lineb
-				.flatMap(new FlatMapFunction<String, Tuple2<String, String>>() {
-
-					@Override
-					public Iterator<Tuple2<String, String>> call(String t) throws Exception {
-						String[] split = t.split(" ");
-						Tuple2<String, String> tuple = new Tuple2(split[0], split[1]);
-						return Arrays.asList(tuple).iterator();
-					}
-				});
-
-		List<Tuple2<String, String>> rddaData = flatMapaRDD.collect();
-
-		final Broadcast<List<Tuple2<String, String>>> rddaBroadCast = sc.broadcast(rddaData);
-		JavaPairRDD<String, Tuple2<String, String>> resultRDD = flatMapbRDD
+		JavaRDD<Tuple2<String, String>> list1RDD = sc.parallelize(lista);
+		JavaRDD<Tuple2<String, String>> list2RDD = sc.parallelize(listb);
+		List<Tuple2<String, String>> rdd1data = list1RDD.collect();
+		final Broadcast<List<Tuple2<String, String>>> rdd1braodcast = sc.broadcast(rdd1data);
+		JavaPairRDD<String, Tuple2<String, String>> resultRDD = list2RDD
 				.mapToPair(new PairFunction<Tuple2<String, String>, String, Tuple2<String, String>>() {
 
 					public Tuple2<String, Tuple2<String, String>> call(Tuple2<String, String> t) throws Exception {
-						List<Tuple2<String, String>> rdd1data = rddaBroadCast.value();
+						List<Tuple2<String, String>> rdd1data = rdd1braodcast.value();
 						Map<String, String> rdd1dataMap = new HashMap<String, String>();
 						for (Tuple2<String, String> data : rdd1data) {
 							rdd1dataMap.put(data._1, data._2);
@@ -127,7 +119,7 @@ public class DataSkew5Optimization implements Serializable {
 
 	public void initSpark(String afile, String bfile) {
 		filea = afile;
-		filea = bfile;
+		fileb = bfile;
 		conf = new SparkConf().setMaster("local").setAppName("DataSkewOptimization");
 	}
 }
