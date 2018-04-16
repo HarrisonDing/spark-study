@@ -9,6 +9,7 @@ package spark.hd;
 
 import spark.core.ActionOperations;
 import spark.core.LogAnalysisCase;
+import spark.core.SumarizeStudentScore;
 import spark.core.TransformationOperation;
 import spark.core.WordCount;
 import spark.opt.DataSkew4Optimization;
@@ -19,11 +20,11 @@ import spark.opt.DataSkew5Optimization;
  *
  */
 enum RUNT {
-	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY, REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION, INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION, REPARTITION, COALESCE, SAMPLE, AGGREGATEBYKEY, MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS, ACTION_REDUCE, ACTION_COLLECT, ACTION_TAKE, ACTION_COUNT, ACTION_TAKEORDERED, ACTION_SAVEASTEXTFILE, ACTION_COUNT_BY_KEY, ACTION_TAKE_SAMPLE, INTEGRATED_LOG_CASE, DATA_SKEW_SOLUTION4, DATA_SKEW_SOLUTION5
+	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY, REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION, INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION, REPARTITION, COALESCE, SAMPLE, AGGREGATEBYKEY, MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS, ACTION_REDUCE, ACTION_COLLECT, ACTION_TAKE, ACTION_COUNT, ACTION_TAKEORDERED, ACTION_SAVEASTEXTFILE, ACTION_COUNT_BY_KEY, ACTION_TAKE_SAMPLE, INTEGRATED_LOG_CASE, DATA_SKEW_SOLUTION4, DATA_SKEW_SOLUTION5, STUDENT_SCORE
 }
 
 public class App {
-	private static RUNT						rt		= RUNT.DATA_SKEW_SOLUTION5;
+	private static RUNT						rt		= RUNT.STUDENT_SCORE;
 	private static TransformationOperation	trans	= new TransformationOperation();
 	private static ActionOperations			acto	= new ActionOperations();
 	private static String					path	= "";
@@ -165,6 +166,14 @@ public class App {
 			DataSkew5Optimization dataSkewOpt5 = new DataSkew5Optimization();
 			dataSkewOpt5.initSpark(path, pathb);
 			dataSkewOpt5.runJob();
+			break;
+
+		case STUDENT_SCORE:
+			path = "D:\\MyWorkSpace\\ResearchingProjects\\spark-study-maven\\data\\student_subject_scores.txt";
+			SumarizeStudentScore sumarizeStudentScore = new SumarizeStudentScore();
+			sumarizeStudentScore.initSpark(path);
+			sumarizeStudentScore.runJob();
+
 			break;
 
 		default:
