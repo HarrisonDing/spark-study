@@ -3,7 +3,6 @@ package spark.score;
 import java.io.Serializable;
 
 public class NameSubjectScore implements Serializable {
-
 	private static final long	serialVersionUID	= -6097505670372662849L;
 	private String				name;
 	private String				subject;

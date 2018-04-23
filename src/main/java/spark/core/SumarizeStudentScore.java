@@ -22,9 +22,9 @@ public class SumarizeStudentScore implements Serializable {
 	private String				filename;
 	private SparkConf			conf;
 
-	public void initSpark(String afile) {
+	public void initSpark(String afile, String master) {
 		filename = afile;
-		conf = new SparkConf().setMaster("local").setAppName("SumarizeStudentScore");
+		conf = new SparkConf().setAppName("SumarizeStudentScore").setMaster(master);
 	}
 
 	@SuppressWarnings("serial")

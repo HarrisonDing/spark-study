@@ -12,6 +12,7 @@ import spark.core.LogAnalysisCase;
 import spark.core.SumarizeStudentScore;
 import spark.core.TransformationOperation;
 import spark.core.WordCount;
+import spark.log.BigLogProcessor;
 import spark.opt.DataSkew4Optimization;
 import spark.opt.DataSkew5Optimization;
 import spark.score.SumarizeStudentScore2;
@@ -21,16 +22,19 @@ import spark.score.SumarizeStudentScore2;
  *
  */
 enum RUNT {
-	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY, REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION, INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION, REPARTITION, COALESCE, SAMPLE, AGGREGATEBYKEY, MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS, ACTION_REDUCE, ACTION_COLLECT, ACTION_TAKE, ACTION_COUNT, ACTION_TAKEORDERED, ACTION_SAVEASTEXTFILE, ACTION_COUNT_BY_KEY, ACTION_TAKE_SAMPLE, INTEGRATED_LOG_CASE, DATA_SKEW_SOLUTION4, DATA_SKEW_SOLUTION5, STUDENT_SCORE, STUDENT_SCORE2
+	WORDCOUNT, MAP, FILTER, FLATMAP, GROUPBYKEY, REDUCEBYKEY, SORTBYKEY, JOIN, COGROUP, UNION, INTERSECTION, DISTINCT, CARTESIAN, MAPPARTITION, REPARTITION, COALESCE, SAMPLE, AGGREGATEBYKEY, MAPPARTITIONWITHINDEX, REPARTITIONANDSORTWITHINPARTITIONS, ACTION_REDUCE, ACTION_COLLECT, ACTION_TAKE, ACTION_COUNT, ACTION_TAKEORDERED, ACTION_SAVEASTEXTFILE, ACTION_COUNT_BY_KEY, ACTION_TAKE_SAMPLE, INTEGRATED_LOG_CASE, DATA_SKEW_SOLUTION4, DATA_SKEW_SOLUTION5, STUDENT_SCORE, STUDENT_SCORE2, BIG_LOG_PROCESSOR, SUMMARIZE_STUDENT_SCORE
 }
 
 public class App {
-	private static RUNT						rt		= RUNT.STUDENT_SCORE2;
+	private static RUNT						rt		= RUNT.SUMMARIZE_STUDENT_SCORE;
 	private static TransformationOperation	trans	= new TransformationOperation();
 	private static ActionOperations			acto	= new ActionOperations();
 	private static String					path	= "";
 
 	public static void main(String[] args) {
+		String cwd = System.getProperty("user.dir");
+		System.out.println("cwd: " + cwd);
+
 		switch (rt) {
 		case WORDCOUNT:
 			// 1. WordCount Test
@@ -172,15 +176,28 @@ public class App {
 		case STUDENT_SCORE:
 			path = "D:\\MyWorkSpace\\ResearchingProjects\\spark-study-maven\\data\\student_subject_scores.txt";
 			SumarizeStudentScore sumarizeStudentScore = new SumarizeStudentScore();
-			sumarizeStudentScore.initSpark(path);
+			sumarizeStudentScore.initSpark(path, "local");
 			sumarizeStudentScore.runJob();
 			break;
 
+		// Duplicated with next
 		case STUDENT_SCORE2:
 			path = "D:\\MyWorkSpace\\ResearchingProjects\\spark-study-maven\\data\\student_subject_scores.txt";
 			SumarizeStudentScore2 sumarizeStudentScore2 = new SumarizeStudentScore2();
-			sumarizeStudentScore2.initSpark(path);
+			sumarizeStudentScore2.initSpark(path, "local");
 			sumarizeStudentScore2.runJob();
+			break;
+
+		case SUMMARIZE_STUDENT_SCORE:
+			String path = cwd + "/data/student_subject_scores.txt";
+			SumarizeStudentScore2 sumarizeStudentScore1 = new SumarizeStudentScore2();
+			sumarizeStudentScore1.initSpark(path, "local");
+			sumarizeStudentScore1.runJob();
+
+			break;
+
+		case BIG_LOG_PROCESSOR:
+			BigLogProcessor.execute("local");
 			break;
 
 		default:

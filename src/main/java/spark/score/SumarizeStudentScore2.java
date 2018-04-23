@@ -9,9 +9,9 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 
@@ -23,9 +23,9 @@ public class SumarizeStudentScore2 implements Serializable {
 	private SparkConf			conf;
 	private NameSubjectScore	nss					= new NameSubjectScore();
 
-	public void initSpark(String afile) {
+	public void initSpark(String afile, String master) {
 		filename = afile;
-		conf = new SparkConf().setMaster("local").setAppName("SumarizeStudentScore2");
+		conf = new SparkConf().setAppName("SumarizeStudentScore").setMaster(master);
 	}
 
 	@SuppressWarnings("serial")
@@ -53,6 +53,16 @@ public class SumarizeStudentScore2 implements Serializable {
 				System.out.println("Target Subject - " + t._1 + " => average score: " + t._2);
 			}
 		});
+
+		rankTotalScoreWithName(subScoreCacheMap).mapToPair(new PairFunction<Tuple2<Float, String>, String, Float>() {
+
+			@Override
+			public Tuple2<String, Float> call(Tuple2<Float, String> t) throws Exception {
+				return new Tuple2<String, Float>(t._2, t._1);
+			}
+		}).foreach(item -> {
+			System.out.println("Name: " + item._1 + ", Total Score: " + item._2);
+		});
 		sc.close();
 	}
 
@@ -66,6 +76,7 @@ public class SumarizeStudentScore2 implements Serializable {
 						return new Tuple2<String, Float>(t.getSubject(), t.getScore());
 					}
 				});
+
 		JavaPairRDD<String, Float> subScoreMapReduceByKey = subScoreMapPair
 				.reduceByKey(new Function2<Float, Float, Float>() {
 
@@ -85,5 +96,44 @@ public class SumarizeStudentScore2 implements Serializable {
 					}
 				});
 		return mapToPair;
+	}
+
+	public JavaPairRDD<Float, String> rankTotalScoreWithName(JavaRDD<NameSubjectScore> jrnss) {
+		JavaPairRDD<String, Tuple2<String, Float>> nameToSubjectScore = jrnss
+				.mapToPair(new PairFunction<NameSubjectScore, String, Tuple2<String, Float>>() { // May no need to do
+																									// this
+
+					@Override
+					public Tuple2<String, Tuple2<String, Float>> call(NameSubjectScore t) throws Exception {
+						return new Tuple2<String, Tuple2<String, Float>>(t.getName(),
+								new Tuple2<String, Float>(t.getSubject(), t.getScore()));
+					}
+				});
+
+		JavaPairRDD<Float, String> scoreToName = nameToSubjectScore
+				.flatMapToPair(new PairFlatMapFunction<Tuple2<String, Tuple2<String, Float>>, String, Float>() {
+
+					@Override
+					public Iterator<Tuple2<String, Float>> call(Tuple2<String, Tuple2<String, Float>> t)
+							throws Exception {
+
+						return Arrays.asList(new Tuple2<String, Float>(t._1, t._2._2)).iterator();
+					}
+				}).reduceByKey(new Function2<Float, Float, Float>() {
+
+					@Override
+					public Float call(Float v1, Float v2) throws Exception {
+						return v1 + v2;
+					}
+				}).mapToPair(new PairFunction<Tuple2<String, Float>, Float, String>() {
+
+					@Override
+					public Tuple2<Float, String> call(Tuple2<String, Float> t) throws Exception {
+						return new Tuple2<Float, String>(t._2, t._1);
+					}
+				}).sortByKey(false);
+
+		return scoreToName;
+
 	}
 }
